@@ -4,25 +4,27 @@ from datetime import datetime, timedelta
 import random
 import uuid
 
+###############################################################
+# Number of participants to simulate (Max of 1,000,000 for CSV)
+N = 100000
+###############################################################
+
+
 def generate_survey_data(num_records=100):
     current_date = datetime(2025, 1, 27)
-    
+
     def generate_datetime():
         days_back = random.randint(0, 4)  # Generate dates within last 4 days
         hours = random.randint(0, 23)
         minutes = random.randint(0, 59)
         seconds = random.randint(0, 59)
-        return current_date - timedelta(days=days_back, 
-                                      hours=random.randint(0, 23),
-                                      minutes=random.randint(0, 59),
-                                      seconds=random.randint(0, 59))
+        return current_date - timedelta(days=days_back, hours=random.randint(0, 23), minutes=random.randint(0, 59), seconds=random.randint(0, 59))
 
     data = []
     for _ in range(num_records):
         start_date = generate_datetime()
         duration = random.randint(50, 1000)  # Duration between 50-1000 seconds
         end_date = start_date + timedelta(seconds=duration)
-        
         record = {
             'StartDate': start_date,
             'EndDate': end_date,
@@ -47,36 +49,37 @@ def generate_survey_data(num_records=100):
             'Q13_Page Submit': None,  # Will be set just after
             'Q13_Click Count': random.randint(1, 14),
         }
-        
+
         # Set Page Submit to be slightly higher than Last Click
         record['Q13_Page Submit'] = round(record['Q13_Last Click'] + 0.003, 3)
-        
+
         # Generate ordering attention check (Q4_1, Q4_2, Q4_3)
         record.update({f'Q4_{i}': i for i in range(1, 4)})
-        
+
         # Generate Q5 responses (1-6 scale)
         record.update({f'Q5_{i}': random.randint(1, 6) for i in range(1, 13)})
-        
+
         # Generate Q6 responses (1-7 scale)
         record.update({f'Q6_{i}': random.randint(1, 7) for i in range(1, 12)})
-        
+
         # Generate Q7 responses (1-5 scale)
         record.update({f'Q7_{i}': random.randint(1, 5) for i in range(1, 6)})
-        
+
         # SC0 (either 2 or 14)
         record['SC0'] = np.random.choice([2, 14], p=[0.4, 0.6])
-        
+
         # Scenario
         record['Scenario'] = np.random.choice(['Anthropomorphic', 'Technical'], p=[0.6, 0.4])
-        
+
         data.append(record)
-    
+
     df = pd.DataFrame(data)
     return df
 
+
 # Generate sample data
-df = generate_survey_data(100000)  # Generate 100,000 records 
+df = generate_survey_data(N)  # Generate N records
 print(df.head())
 
-# Export to CSV if needed
+# Export to CSV
 df.to_csv('generated_survey_data.csv', index=False)
