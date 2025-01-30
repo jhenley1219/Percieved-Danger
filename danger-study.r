@@ -1,3 +1,5 @@
+# nolint start
+
 install.packages("psych")
 install.packages("tidyr")
 install.packages("ggplot2")
@@ -40,10 +42,20 @@ View(clean_data)
 ################################################
 # STATISTICAL ANALYSIS:
 #   T-test
-#     Assumptions:
-#       1. Independence of observations between groups
-#       2. Normal distribution of residuals for each group
-#       3. Homogeneity of variance between groups
+#     H1: AF(scenario) vs PD
+#     H2: AF(scenario) vs PT
+#
+#   Multiple Regression:`Q1`
+#     H3: PD = b0 + b1(AF) + b2(PT) + b3(AF*PT)
+#     Exploratory: PA = b0 + b1(AF) + b2(PD) + b3(AF*PD)
+#
+# Q5 - Percieved Danger(PD)
+# Q6 - Percieved Transparency (PT)
+# Q? - Percieved Transparency (PT)
+# Q7 - Percieved Agency (PA)
+#
+# Manipulation check
+#
 ################################################
 library(tidyverse)
 
@@ -51,8 +63,8 @@ library(tidyverse)
 survey_means <- clean_data %>%
   rowwise() %>%
   mutate(
-    Q5_mean = mean(c(Q5_1, Q5_2, Q5_3, Q5_4, Q5_5, Q5_6, Q5_7, Q5_8, Q5_9, Q5_10, Q5_11, Q5_12), na.rm = FALSE),  # nolint
-    Q6_mean = mean(c(Q6_1, Q6_2, Q6_3, Q6_4, Q6_5, Q6_6, Q6_7, Q6_8, Q6_9, Q6_10, Q6_11), na.rm = FALSE), # nolint
+    Q5_mean = mean(c(Q5_1, Q5_2, Q5_3, Q5_4, Q5_5, Q5_6, Q5_7, Q5_8, Q5_9, Q5_10, Q5_11, Q5_12), na.rm = FALSE),
+    Q6_mean = mean(c(Q6_1, Q6_2, Q6_3, Q6_4, Q6_5, Q6_6, Q6_7, Q6_8, Q6_9, Q6_10, Q6_11), na.rm = FALSE),
     Q7_mean = mean(c(Q7_1, Q7_2, Q7_3, Q7_4, Q7_5), na.rm = FALSE)
   )
 
@@ -62,8 +74,9 @@ View(survey_means)
 # Run t-tests
 t.test(Q5_mean ~ Scenario, data = survey_means)
 t.test(Q6_mean ~ Scenario, data = survey_means)
-t.test(Q7_mean ~ Scenario, data = survey_means)
 
+# Run Multiple Regression
+regression_model <- lm(Q7_mean ~ Q5_mean + Q6_mean + Q5_mean * Q6_mean, data = survey_means)
 
 # Plot results
 ggplot(survey_means, aes(x = Scenario, y = Q5_mean, fill = Scenario)) +
@@ -74,6 +87,4 @@ ggplot(survey_means, aes(x = Scenario, y = Q6_mean, fill = Scenario)) +
   geom_boxplot() +
   labs(x = "Scenario", y = "Q6 Mean")
 
-ggplot(survey_means, aes(x = Scenario, y = Q7_mean, fill = Scenario)) +
-  geom_boxplot() +
-  labs(x = "Scenario", y = "Q7 Mean")
+# nolint end
